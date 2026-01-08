@@ -12,9 +12,9 @@ const Page = async () => {
 	return (
 		<main className="main-container">
 			<section className="home-grid">
-				{/* <Suspense fallback={<CoinOverviewFallback />}>
+				<Suspense fallback={<CoinOverviewFallback />}>
 					<CoinOverview />
-				</Suspense> */}
+				</Suspense>
 
 				<Suspense fallback={<TrendingCoinsFallback />}>
 					<TrendingCoins />
