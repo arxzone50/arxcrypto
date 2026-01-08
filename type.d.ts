@@ -14,7 +14,7 @@ interface CandlestickChartProps {
       mode?: 'historical' | 'live';
       initialPeriod?: Period;
       liveInterval: '1s' | '1m';
-      setLiveInterval: (interval: '1s' | '1m') => void;
+      setLiveInterval?: (interval: '1s' | '1m') => void; // <--- TAMBAHKAN TANDA TANYA (?) DI SINI
 }
 
 interface ConverterProps {
@@ -36,7 +36,7 @@ interface Ticker {
       trade_url: string;
 }
 
-type Period = 'daily' | 'weekly' | 'monthly' | '3months' | '6months' | 'yearly' | 'max';
+type Period = 'daily' | 'weekly' | 'monthly' | '3months' | '6months' | 'yearly' ;
 
 interface CoinMarketData {
       id: string;
