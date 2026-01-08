@@ -93,7 +93,7 @@ export const getChartConfig = (
 
 export const PERIOD_CONFIG: Record<
       Period,
-      { days: number | string }  // HAPUS 'interval' dari sini
+      { days: number | string }
 > = {
       daily: { days: 1 },
       weekly: { days: 7 },
@@ -110,9 +110,4 @@ export const PERIOD_BUTTONS: { value: Period; label: string }[] = [
       { value: '3months', label: '3M' },
       { value: '6months', label: '6M' },
       { value: 'yearly', label: '1Y' },
-];
-
-export const LIVE_INTERVAL_BUTTONS: { value: '1s' | '1m'; label: string }[] = [
-      { value: '1s', label: '1s' },
-      { value: '1m', label: '1m' },
 ];

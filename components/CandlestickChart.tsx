@@ -4,7 +4,6 @@ import { useEffect, useRef, useState, useTransition } from 'react';
 import {
       getCandlestickConfig,
       getChartConfig,
-      LIVE_INTERVAL_BUTTONS,
       PERIOD_BUTTONS,
       PERIOD_CONFIG,
 } from '@/constants';
@@ -12,7 +11,6 @@ import { CandlestickSeries, createChart, IChartApi, ISeriesApi } from 'lightweig
 import { fetcher } from '@/lib/coingecko.actions';
 import { convertOHLCData } from '@/lib/utils';
 
-// Hapus setLiveInterval dari Props jika Anda mau, tapi saya biarkan di sini agar tidak merusak tipe data lainnya
 const CandlestickChart = ({
       children,
       data,
@@ -21,8 +19,6 @@ const CandlestickChart = ({
       initialPeriod = 'daily',
       liveOhlcv = null,
       mode = 'historical',
-      liveInterval: initialLiveInterval, // Ubah nama prop ini agar tidak bentrok dengan state
-      setLiveInterval, // Prop ini bisa diabaikan sekarang
 }: CandlestickChartProps) => {
       const chartContainerRef = useRef<HTMLDivElement | null>(null);
       const chartRef = useRef<IChartApi | null>(null);
@@ -32,10 +28,6 @@ const CandlestickChart = ({
       const [period, setPeriod] = useState(initialPeriod);
       const [ohlcData, setOhlcData] = useState<OHLCData[]>(data ?? []);
       const [isPending, startTransition] = useTransition();
-
-      // --- PERBAIKAN DI SINI ---
-      // Kita buat state sendiri di dalam komponen client ini
-      const [activeLiveInterval, setActiveLiveInterval] = useState(initialLiveInterval || '1m');
 
       const fetchOHLCData = async (selectedPeriod: Period) => {
             try {
@@ -152,26 +144,6 @@ const CandlestickChart = ({
                                     </button>
                               ))}
                         </div>
-
-                        {/* --- PERBAIKAN DI SINI --- */}
-                        {/* Ganti liveInterval dengan activeLiveInterval (state lokal) */}
-                        {activeLiveInterval && (
-                              <div className="button-group">
-                                    <span className="text-sm mx-2 font-medium text-purple-100/50">Update Frequency:</span>
-                                    {LIVE_INTERVAL_BUTTONS.map(({ value, label }) => (
-                                          <button
-                                                key={value}
-                                                // Gunakan activeLiveInterval untuk cek tombol aktif
-                                                className={activeLiveInterval === value ? 'config-button-active' : 'config-button'}
-                                                // Gunakan setActiveLiveInterval untuk mengubah state
-                                                onClick={() => setActiveLiveInterval(value)}
-                                                disabled={isPending}
-                                          >
-                                                {label}
-                                          </button>
-                                    ))}
-                              </div>
-                        )}
                   </div>
 
                   <div ref={chartContainerRef} className="chart" style={{ height }} />
