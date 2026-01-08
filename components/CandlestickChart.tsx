@@ -4,7 +4,6 @@ import { useEffect, useRef, useState, useTransition } from 'react';
 import {
       getCandlestickConfig,
       getChartConfig,
-      LIVE_INTERVAL_BUTTONS,
       PERIOD_BUTTONS,
       PERIOD_CONFIG,
 } from '@/constants';
@@ -20,8 +19,6 @@ const CandlestickChart = ({
       initialPeriod = 'daily',
       liveOhlcv = null,
       mode = 'historical',
-      liveInterval,
-      setLiveInterval,
 }: CandlestickChartProps) => {
       const chartContainerRef = useRef<HTMLDivElement | null>(null);
       const chartRef = useRef<IChartApi | null>(null);
@@ -34,12 +31,11 @@ const CandlestickChart = ({
 
       const fetchOHLCData = async (selectedPeriod: Period) => {
             try {
-                  const { days, interval } = PERIOD_CONFIG[selectedPeriod];
+                  const { days } = PERIOD_CONFIG[selectedPeriod];
 
                   const newData = await fetcher<OHLCData[]>(`/coins/${coinId}/ohlc`, {
                         vs_currency: 'usd',
                         days,
-                        interval,
                         precision: 'full',
                   });
 
@@ -148,22 +144,6 @@ const CandlestickChart = ({
                                     </button>
                               ))}
                         </div>
-
-                        {liveInterval && (
-                              <div className="button-group">
-                                    <span className="text-sm mx-2 font-medium text-purple-100/50">Update Frequency:</span>
-                                    {LIVE_INTERVAL_BUTTONS.map(({ value, label }) => (
-                                          <button
-                                                key={value}
-                                                className={liveInterval === value ? 'config-button-active' : 'config-button'}
-                                                onClick={() => setLiveInterval && setLiveInterval(value)}
-                                                disabled={isPending}
-                                          >
-                                                {label}
-                                          </button>
-                                    ))}
-                              </div>
-                        )}
                   </div>
 
                   <div ref={chartContainerRef} className="chart" style={{ height }} />
