@@ -1,103 +1,104 @@
-import React from 'react';
-import { fetcher, getPools } from '@/lib/coingecko.actions';
+import { fetcher } from '@/lib/coingecko.actions';
+import Image from 'next/image';
 import Link from 'next/link';
-import { ArrowUpRight } from 'lucide-react';
-import { formatCurrency } from '@/lib/utils';
-import Converter from '@/components/Converter';
 
-const Page = async ({ params }: NextPageProps) => {
-  const { id } = await params;
+import { cn, formatPercentage, formatCurrency } from '@/lib/utils';
+import DataTable from '@/components/DataTable';
+import CoinsPagination from '@/components/CoinsPagination';
 
-  const [coinData, coinOHLCData] = await Promise.all([
-    fetcher<CoinDetailsData>(`/coins/${id}`, {
-      dex_pair_format: 'contract_address',
-    }),
-    fetcher<OHLCData>(`/coins/${id}/ohlc`, {
-      vs_currency: 'usd',
-      days: 1,
-      interval: 'hourly',
-      precision: 'full',
-    }),
-  ]);
+const Coins = async ({ searchParams }: NextPageProps) => {
+	const { page } = await searchParams;
 
-  const platform = coinData.asset_platform_id
-    ? coinData.detail_platforms?.[coinData.asset_platform_id]
-    : null;
-  const network = platform?.geckoterminal_url.split('/')[3] || null;
-  const contractAddress = platform?.contract_address || null;
+	const currentPage = Number(page) || 1;
+	const perPage = 10;
 
-  const pool = await getPools(id, network, contractAddress);
+	const coinsData = await fetcher<CoinMarketData[]>('/coins/markets', {
+		vs_currency: 'usd',
+		order: 'market_cap_desc',
+		per_page: perPage,
+		page: currentPage,
+		sparkline: 'false',
+		price_change_percentage: '24h',
+	});
 
-  const coinDetails = [
-    {
-      label: 'Market Cap',
-      value: formatCurrency(coinData.market_data.market_cap.usd),
-    },
-    {
-      label: 'Market Cap Rank',
-      value: `# ${coinData.market_cap_rank}`,
-    },
-    {
-      label: 'Total Volume',
-      value: formatCurrency(coinData.market_data.total_volume.usd),
-    },
-    {
-      label: 'Website',
-      value: '-',
-      link: coinData.links.homepage[0],
-      linkText: 'Homepage',
-    },
-    {
-      label: 'Explorer',
-      value: '-',
-      link: coinData.links.blockchain_site[0],
-      linkText: 'Explorer',
-    },
-    {
-      label: 'Community',
-      value: '-',
-      link: coinData.links.subreddit_url,
-      linkText: 'Community',
-    },
-  ];
+	const columns: DataTableColumn<CoinMarketData>[] = [
+		{
+			header: 'Rank',
+			cellClassName: 'rank-cell',
+			cell: (coin) => (
+				<>
+					#{coin.market_cap_rank}
+					<Link href={`/coins/${coin.id}`} aria-label="View coin" />
+				</>
+			),
+		},
+		{
+			header: 'Token',
+			cellClassName: 'token-cell',
+			cell: (coin) => (
+				<div className="token-info">
+					<Image src={coin.image} alt={coin.name} width={36} height={36} />
+					<p>
+						{coin.name} ({coin.symbol.toUpperCase()})
+					</p>
+				</div>
+			),
+		},
+		{
+			header: 'Price',
+			cellClassName: 'price-cell',
+			cell: (coin) => formatCurrency(coin.current_price),
+		},
+		{
+			header: '24h Change',
+			cellClassName: 'change-cell',
+			cell: (coin) => {
+				const isTrendingUp = coin.price_change_percentage_24h > 0;
 
-  return (
-    <main id="coin-details-page">
-      <section className="primary">
-          <h4>Exchange Listings</h4>
-      </section>
+				return (
+					<span
+						className={cn('change-value', {
+							'text-green-600': isTrendingUp,
+							'text-red-500': !isTrendingUp,
+						})}
+					>
+						{isTrendingUp && '+'}
+						{formatPercentage(coin.price_change_percentage_24h)}
+					</span>
+				);
+			},
+		},
+		{
+			header: 'Market Cap',
+			cellClassName: 'market-cap-cell',
+			cell: (coin) => formatCurrency(coin.market_cap),
+		},
+	];
 
-      <section className="secondary">
-        <Converter
-          symbol={coinData.symbol}
-          icon={coinData.image.small}
-          priceList={coinData.market_data.current_price}
-        />
+	const hasMorePages = coinsData.length === perPage;
 
-        <div className="details">
-          <h4>Coin Details</h4>
+	const estimatedTotalPages = currentPage >= 100 ? Math.ceil(currentPage / 100) * 100 + 100 : 100;
 
-          <ul className="details-grid">
-            {coinDetails.map(({ label, value, link, linkText }, index) => (
-              <li key={index}>
-                <p className={label}>{label}</p>
+	return (
+		<main id="coins-page">
+			<div className="content">
+				<h4>All Coins</h4>
 
-                {link ? (
-                  <div className="link">
-                    <Link href={link} target="_blank">
-                      {linkText || label}
-                    </Link>
-                    <ArrowUpRight size={16} />
-                  </div>
-                ) : (
-                  <p className="text-base font-medium">{value}</p>
-                )}
-              </li>
-            ))}
-          </ul>
-        </div>
-      </section>
-    </main>
-  );
+				<DataTable
+					tableClassName="coins-table"
+					columns={columns}
+					data={coinsData}
+					rowKey={(coin) => coin.id}
+				/>
+
+				<CoinsPagination
+					currentPage={currentPage}
+					totalPages={estimatedTotalPages}
+					hasMorePages={hasMorePages}
+				/>
+			</div>
+		</main>
+	);
 };
-export default Page;
+
+export default Coins;
