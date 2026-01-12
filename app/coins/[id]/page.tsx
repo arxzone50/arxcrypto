@@ -5,22 +5,30 @@ import { ArrowUpRight } from 'lucide-react';
 import { formatCurrency } from '@/lib/utils';
 import LiveDataWrapper from '@/components/LiveDataWrapper';
 import Converter from '@/components/Converter';
-import CoinMilestones from '@/components/CoinMilestones'; // <--- 1. Import Komponen Baru
+import CoinMilestones from '@/components/CoinMilestones';
+import { TopMovers, CoinMarketItem } from '@/components/TopMovers';
 
 const Page = async ({ params }: NextPageProps) => {
     const { id } = await params;
 
-    const [coinData, coinOHLCData] = await Promise.all([
+    const [coinData, coinOHLCData, marketList] = await Promise.all([
         fetcher<CoinDetailsData>(`/coins/${id}`, {
             dex_pair_format: 'contract_address',
         }),
         fetcher<OHLCData>(`/coins/${id}/ohlc`, {
             vs_currency: 'usd',
             days: 1,
-            // interval: 'hourly',
             precision: 'full',
         }),
+        fetcher<CoinMarketItem[]>('/coins/markets', {
+            vs_currency: 'usd',
+            per_page: 100,
+            order: 'market_cap_desc',
+            sparkline: false,
+            price_change_percentage: '24h',
+        }),
     ]);
+
 
     const platform = coinData.asset_platform_id
         ? coinData.detail_platforms?.[coinData.asset_platform_id]
@@ -67,7 +75,7 @@ const Page = async ({ params }: NextPageProps) => {
         <main id="coin-details-page">
             <section className="primary">
                 <LiveDataWrapper coinId={id} poolId={pool.id} coin={coinData} coinOHLCData={coinOHLCData}>
-                    <h4>Exchange Listings</h4>
+                    <h1>Exchange Listings</h1>
                 </LiveDataWrapper>
             </section>
 
@@ -80,12 +88,10 @@ const Page = async ({ params }: NextPageProps) => {
 
                 <div className="details">
                     <h4>Coin Details</h4>
-
                     <ul className="details-grid">
                         {coinDetails.map(({ label, value, link, linkText }, index) => (
                             <li key={index}>
                                 <p className={label}>{label}</p>
-
                                 {link ? (
                                     <div className="link">
                                         <Link href={link} target="_blank">
@@ -101,16 +107,15 @@ const Page = async ({ params }: NextPageProps) => {
                     </ul>
                 </div>
 
-                {/* <p>CoinMilestones</p> isi top gain dan top loser di sini */}
-                
-                {/* --- 2. Menggunakan Komponen CoinMilestones --- */}
                 <div className="mt-8">
                     <h4 className="mb-4 text-lg font-semibold">Milestones</h4>
                     <CoinMilestones marketData={coinData.market_data} />
                 </div>
-                
+
+                <TopMovers coins={marketList} />
             </section>
         </main>
     );
 };
+
 export default Page;
