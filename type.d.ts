@@ -207,6 +207,14 @@ interface CoinDetailsData {
             total_volume: {
                   usd: number;
             };
+            // --- PERBAIKAN: Menambahkan properti yang hilang ---
+            fully_diluted_valuation?: {
+                  usd: number;
+            };
+            circulating_supply?: number;
+            total_supply?: number;
+            max_supply?: number;
+            // -----------------------------------------------
       };
       market_cap_rank: number;
       description: {
