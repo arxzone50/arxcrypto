@@ -52,7 +52,7 @@ const generateMockTrades = (currentPrice: number): Trade[] => {
   const trades: Trade[] = [];
   const now = Date.now();
 
-  for (let i = 0; i < 10; i++) {
+  for (let i = 0; i < 5; i++) {
     const randomPrice = currentPrice + (Math.random() - 0.5) * (currentPrice * 0.005);
     const randomAmount = parseFloat((Math.random() * 2).toFixed(4));
     const type = Math.random() > 0.5 ? 'b' : 's';
@@ -116,7 +116,7 @@ const LiveDataWrapper = ({ children, coinId, coin, coinOHLCData }: LiveDataProps
   const { trades, price } = useCoinGeckoRest({ coinId });
 
   // --- LIMIT EXCHANGES KE 10 TERATAS ---
-  const exchanges = (coin.tickers || []).slice(0, 10) as ExchangeTicker[];
+  const exchanges = (coin.tickers || []).slice(0, 5) as ExchangeTicker[];
 
   // Hitung total volume untuk menghitung share per exchange
   const totalVolume = exchanges.reduce(
