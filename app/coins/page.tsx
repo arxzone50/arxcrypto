@@ -1,7 +1,6 @@
 import { fetcher } from '@/lib/coingecko.actions';
 import Image from 'next/image';
 import Link from 'next/link';
-
 import { cn, formatPercentage, formatCurrency } from '@/lib/utils';
 import DataTable from '@/components/DataTable';
 import CoinsPagination from '@/components/CoinsPagination';
@@ -67,6 +66,11 @@ const Coins = async ({ searchParams }: NextPageProps) => {
 					</span>
 				);
 			},
+		},
+		{
+			header: 'Volume (24h)',
+			cellClassName: 'volume-cell',
+			cell: (coin) => formatCurrency(coin.total_volume),
 		},
 		{
 			header: 'Market Cap',
