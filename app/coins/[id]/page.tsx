@@ -1,6 +1,7 @@
 import React from 'react';
 import { fetcher, getPools } from '@/lib/coingecko.actions';
 import Link from 'next/link';
+import { Separator } from '@/components/ui/separator';
 import { ArrowUpRight } from 'lucide-react';
 import { formatCurrency } from '@/lib/utils';
 import LiveDataWrapper from '@/components/LiveDataWrapper';
@@ -38,11 +39,25 @@ const Page = async ({ params }: NextPageProps) => {
 
     const pool = await getPools(id, network, contractAddress);
 
+    // Format helper untuk angka supply (supaya tidak ada tanda mata uang $, tapi pemisah ribuan)
+    const formatSupply = (value: number | null | undefined) => {
+        if (!value) return '-';
+        return `${value.toLocaleString('en-US')} ${coinData.symbol.toUpperCase()}`;
+    };
+
     const coinDetails = [
         {
             label: 'Market Cap',
             value: formatCurrency(coinData.market_data.market_cap.usd),
         },
+        // --- TAMBAHAN: FDV (Fully Diluted Valuation) ---
+        {
+            label: 'Fully Diluted Valuation',
+            value: coinData.market_data.fully_diluted_valuation?.usd
+                ? formatCurrency(coinData.market_data.fully_diluted_valuation.usd)
+                : '-',
+        },
+        // -----------------------------------------------
         {
             label: 'Market Cap Rank',
             value: `# ${coinData.market_cap_rank}`,
@@ -51,6 +66,20 @@ const Page = async ({ params }: NextPageProps) => {
             label: 'Total Volume',
             value: formatCurrency(coinData.market_data.total_volume.usd),
         },
+        // --- TAMBAHAN: SUPPLIES ---
+        {
+            label: 'Circulating Supply',
+            value: formatSupply(coinData.market_data.circulating_supply),
+        },
+        {
+            label: 'Total Supply',
+            value: formatSupply(coinData.market_data.total_supply),
+        },
+        {
+            label: 'Max Supply',
+            value: formatSupply(coinData.market_data.max_supply),
+        },
+        // ---------------------------
         {
             label: 'Website',
             value: '-',
@@ -86,6 +115,8 @@ const Page = async ({ params }: NextPageProps) => {
                     priceList={coinData.market_data.current_price}
                 />
 
+                <Separator className="my-4 h-px w-full bg-gray-700" />
+
                 <div className="details">
                     <h4>Coin Details</h4>
                     <ul className="details-grid">
@@ -108,9 +139,10 @@ const Page = async ({ params }: NextPageProps) => {
                 </div>
 
                 <div className="mt-8">
-                    <h4 className="mb-4 text-lg font-semibold">Milestones</h4>
                     <CoinMilestones marketData={coinData.market_data} />
                 </div>
+
+                <Separator className="my-4 h-px w-full bg-gray-700" />
 
                 <TopMovers coins={marketList} />
             </section>

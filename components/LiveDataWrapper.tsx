@@ -339,6 +339,8 @@ const LiveDataWrapper = ({ children, coinId, coin, coinOHLCData }: LiveDataProps
         </div>
       )}
 
+      <Separator className="divider" />
+
       {/* Recent Trades */}
       {tradeColumns && (
         <div className="trades">

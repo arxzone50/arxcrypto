@@ -32,9 +32,6 @@ export function TopMovers({ coins }: TopMoversProps) {
 
     return (
         <div className="mt-8 p-5 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm">
-            <h4 className="mb-4 text-lg font-semibold flex items-center gap-2">
-                Market Movers (24 Jam)
-            </h4>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {/* Top Gainers */}
