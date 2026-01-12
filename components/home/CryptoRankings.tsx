@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { formatCurrency } from '@/lib/utils';
@@ -15,53 +15,17 @@ interface Coin {
   price_change_percentage_24h: number;
 }
 
-// Props untuk komponen List internal
 interface RankingListProps {
   title: string;
-  order: 'gainers' | 'losers';
-  titleColorClass?: string; // Untuk styling judul (misal hijau untuk gainer, merah untuk loser)
+  coins: Coin[]; // Ubah props menerima array coin langsung
+  titleColorClass?: string;
+  isGainer?: boolean; // Penanda untuk styling warna persen
 }
 
 /**
- * Hook internal untuk fetch data Top Gainer/Loser
+ * Komponen UI List (Sekarang hanya menerima data, tidak fetch lagi)
  */
-const useRankings = (order: 'gainers' | 'losers') => {
-  const [coins, setCoins] = useState<Coin[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const fetchData = async () => {
-      setLoading(true);
-      try {
-        // Tentukan order API CoinGecko
-        const sortOrder = order === 'gainers' 
-          ? 'price_change_percentage_24h_desc' 
-          : 'price_change_percentage_24h_asc';
-
-        const res = await fetch(
-          `https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=${sortOrder}&per_page=5&page=1&sparkline=false`
-        );
-        const data = await res.json();
-        setCoins(data);
-      } catch (error) {
-        console.error('Gagal mengambil rankings:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchData();
-  }, [order]);
-
-  return { coins, loading };
-};
-
-/**
- * Komponen UI untuk menampilkan List Ranking
- */
-const RankingList = ({ title, order, titleColorClass = 'text-primary' }: RankingListProps) => {
-  const { coins, loading } = useRankings(order);
-
+const RankingList = ({ title, coins, titleColorClass = 'text-primary', isGainer = true }: RankingListProps) => {
   return (
     <Card className="w-full h-full">
       <CardHeader>
@@ -70,7 +34,7 @@ const RankingList = ({ title, order, titleColorClass = 'text-primary' }: Ranking
         </CardTitle>
       </CardHeader>
       <CardContent>
-        {loading ? (
+        {coins.length === 0 ? (
           <div className="flex items-center justify-center h-40 text-muted-foreground text-sm">
             Loading...
           </div>
@@ -80,12 +44,10 @@ const RankingList = ({ title, order, titleColorClass = 'text-primary' }: Ranking
               <Link key={coin.id} href={`/coin/${coin.id}`} className="block group">
                 <div className="flex items-center justify-between p-2 rounded-md hover:bg-accent transition-colors cursor-pointer">
                   <div className="flex items-center gap-3">
-                    {/* Rank */}
                     <span className="text-muted-foreground text-sm font-mono w-4">
                       {index + 1}.
                     </span>
                     
-                    {/* Icon & Name */}
                     <div className="flex items-center gap-2">
                       <img 
                         src={coin.image} 
@@ -103,18 +65,12 @@ const RankingList = ({ title, order, titleColorClass = 'text-primary' }: Ranking
                     </div>
                   </div>
 
-                  {/* Price & Change */}
                   <div className="flex flex-col items-end">
                     <span className="text-xs font-medium">
                       {formatCurrency(coin.current_price)}
                     </span>
-                    {/* 
-                      Logic Warna: 
-                      - Gainer list (order=gainers): selalu hijau (+)
-                      - Loser list (order=losers): selalu merah (-)
-                    */}
                     <span className={`text-xs font-bold ${
-                      order === 'gainers' ? 'text-green-500' : 'text-red-500'
+                      isGainer ? 'text-green-500' : 'text-red-500'
                     }`}>
                       {coin.price_change_percentage_24h > 0 ? '+' : ''}
                       {coin.price_change_percentage_24h?.toFixed(2)}%
@@ -131,29 +87,65 @@ const RankingList = ({ title, order, titleColorClass = 'text-primary' }: Ranking
 };
 
 /**
- * EXPORT: Komponen Top Gainer
- * Menggunakan styling judul hijau
+ * Komponen Utama Container
+ * Bertugas fetching data 1x, lalu sorting jadi Gainers & Losers
  */
-export const TopGainer = () => {
-  return (
-    <RankingList 
-      title="Top Gainers (24h)" 
-      order="gainers" 
-      titleColorClass="text-green-600 dark:text-green-500" 
-    />
-  );
-};
+export default function CryptoRankings() {
+  const [allCoins, setAllCoins] = useState<Coin[]>([]);
+  const [loading, setLoading] = useState(true);
 
-/**
- * EXPORT: Komponen Top Loser
- * Menggunakan styling judul merah
- */
-export const TopLoser = () => {
+  useEffect(() => {
+    const fetchData = async () => {
+      setLoading(true);
+      try {
+        // Kita ambil 50 koin terbesar berdasarkan Market Cap
+        // Lalu nanti kita sort manual di sini untuk cari Gainer & Loser
+        const res = await fetch(
+          `https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=50&page=1&sparkline=false&price_change_percentage=24h`
+        );
+        const data = await res.json();
+        setAllCoins(data);
+      } catch (error) {
+        console.error('Gagal mengambil rankings:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  // Hitung Top Gainers (Sort Descending)
+  const topGainers = useMemo(() => {
+    return [...allCoins]
+      .sort((a, b) => b.price_change_percentage_24h - a.price_change_percentage_24h)
+      .slice(0, 5);
+  }, [allCoins]);
+
+  // Hitung Top Losers (Sort Ascending)
+  const topLosers = useMemo(() => {
+    return [...allCoins]
+      .sort((a, b) => a.price_change_percentage_24h - b.price_change_percentage_24h)
+      .slice(0, 5);
+  }, [allCoins]);
+
   return (
-    <RankingList 
-      title="Top Losers (24h)" 
-      order="losers" 
-      titleColorClass="text-red-600 dark:text-red-500" 
-    />
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      {/* Top Gainer Component */}
+      <RankingList 
+        title="Top Gainers (24h)" 
+        coins={topGainers} 
+        titleColorClass="text-green-600 dark:text-green-500" 
+        isGainer={true}
+      />
+
+      {/* Top Loser Component */}
+      <RankingList 
+        title="Top Losers (24h)" 
+        coins={topLosers} 
+        titleColorClass="text-red-600 dark:text-red-500" 
+        isGainer={false}
+      />
+    </div>
   );
-};
+}
