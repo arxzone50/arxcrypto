@@ -9,7 +9,6 @@ import { formatCurrency, timeAgo } from '@/lib/utils';
 import { useState, useEffect } from 'react';
 import CoinHeader from '@/components/CoinHeader';
 
-// Tipe data untuk Trade (Recent Trades)
 interface Trade {
   price: number;
   amount: number;
@@ -18,7 +17,6 @@ interface Trade {
   timestamp: number;
 }
 
-// Tipe data untuk Exchange (Tickers)
 interface ExchangeTicker {
   base: string;
   target: string;
@@ -45,9 +43,6 @@ interface LiveDataProps {
   coinOHLCData: any;
 }
 
-/**
- * Helper function untuk membuat Data Simulasi (Mock Trades)
- */
 const generateMockTrades = (currentPrice: number): Trade[] => {
   const trades: Trade[] = [];
   const now = Date.now();
@@ -68,9 +63,6 @@ const generateMockTrades = (currentPrice: number): Trade[] => {
   return trades;
 };
 
-/**
- * Custom Hook untuk mengambil data via REST API
- */
 const useCoinGeckoRest = ({ coinId }: { coinId: string }) => {
   const [data, setData] = useState({
     price: { usd: 0, change24h: 0 },
@@ -115,10 +107,8 @@ const useCoinGeckoRest = ({ coinId }: { coinId: string }) => {
 const LiveDataWrapper = ({ children, coinId, coin, coinOHLCData }: LiveDataProps) => {
   const { trades, price } = useCoinGeckoRest({ coinId });
 
-  // --- LIMIT EXCHANGES KE 10 TERATAS ---
   const exchanges = (coin.tickers || []).slice(0, 5) as ExchangeTicker[];
 
-  // Hitung total volume untuk menghitung share per exchange
   const totalVolume = exchanges.reduce(
     (sum, t) => sum + (t.converted_volume?.usd ?? 0),
     0
@@ -136,7 +126,6 @@ const LiveDataWrapper = ({ children, coinId, coin, coinOHLCData }: LiveDataProps
       cell: (ticker) => (
         <div className="flex items-center gap-2">
           {ticker.market.logo && (
-            // eslint-disable-next-line @next/next/no-img-element
             <img
               src={ticker.market.logo}
               alt={ticker.market.name}
@@ -207,7 +196,6 @@ const LiveDataWrapper = ({ children, coinId, coin, coinOHLCData }: LiveDataProps
       cell: (ticker) => {
         const trust = ticker.trust_score;
         
-        // Logic Manual Coloring untuk Badge
         if (trust === 'green') {
           return (
             <Badge className="bg-green-500 text-white border-transparent hover:bg-green-600">
@@ -257,7 +245,6 @@ const LiveDataWrapper = ({ children, coinId, coin, coinOHLCData }: LiveDataProps
           );
         }
 
-        // Jika normal (tidak anomaly & tidak stale), tampilkan teks hijau biasa
         if (!ticker.is_anomaly && !ticker.is_stale) {
           return <span className="text-green-500 font-medium text-xs">OK</span>;
         }
@@ -344,7 +331,7 @@ const LiveDataWrapper = ({ children, coinId, coin, coinOHLCData }: LiveDataProps
       {/* Recent Trades */}
       {tradeColumns && (
         <div className="trades">
-          <h4 className="mb-4 text-lg font-semibold">Recent Trades (Simulasi)</h4>
+          <h4 className="mb-4 text-lg font-semibold">Recent Trades (Demo)</h4>
 
           <DataTable
             columns={tradeColumns}

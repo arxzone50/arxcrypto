@@ -2,14 +2,12 @@
 
 import qs from 'query-string';
 
-// --- 1. CONFIGURATION ---
 const BASE_URL = process.env.COINGECKO_BASE_URL;
 const API_KEY = process.env.COINGECKO_API_KEY;
 
 if (!BASE_URL) throw new Error('Could not get base url');
 if (!API_KEY) throw new Error('Could not get api key');
 
-// --- 2. TYPES & INTERFACES ---
 type QueryParams = Record<string, string | number | boolean | undefined | null>;
 
 interface CoinGeckoErrorBody {
@@ -23,7 +21,6 @@ export interface PoolData {
   network: string;
 }
 
-// Tipe untuk hasil pencarian
 export interface SearchCoin {
   id: string;
   name: string;
@@ -37,7 +34,6 @@ export interface SearchCoin {
   };
 }
 
-// Tipe untuk hasil trending (berbeda strukturnya dengan SearchCoin)
 export interface TrendingCoin {
   item: {
     id: string;
@@ -53,8 +49,6 @@ export interface TrendingCoin {
     };
   };
 }
-
-// --- 3. HELPER FUNCTIONS ---
 
 export async function fetcher<T>(
   endpoint: string,
@@ -87,8 +81,6 @@ export async function fetcher<T>(
 
   return response.json();
 }
-
-// --- 4. DATA FUNCTIONS ---
 
 export async function getPools(
   id: string,

@@ -103,7 +103,6 @@ export const SearchModal = ({
             }
       );
 
-      // Fetch Data Pencarian
       const { data: searchResults = [], isValidating: isSearching } = useSWR<
             SearchCoin[]
       >(
@@ -134,7 +133,6 @@ export const SearchModal = ({
 
       const hasQuery = debouncedQuery.length > 0;
 
-      // Gunakan trendingData dari SWR jika initialTrendingCoins kosong
       const trendingCoins = (initialTrendingCoins?.length > 0
             ? initialTrendingCoins
             : (trendingData || [])
@@ -154,7 +152,6 @@ export const SearchModal = ({
                         <SearchIcon size={18} />
                         Search
                         <kbd className='kbd'>
-                              {/* GANTI BAGIAN INI */}
                               <span className='text-xs'>
                                     {isMac ? '⌘' : 'Ctrl'}
                               </span>K

@@ -1,5 +1,5 @@
 import { clsx, type ClassValue } from 'clsx';
-import { Time } from 'lightweight-charts';
+import type { Time } from 'lightweight-charts';
 import { twMerge } from 'tailwind-merge';
 
 export function cn(...inputs: ClassValue[]) {
@@ -65,14 +65,13 @@ export function timeAgo(date: string | number | Date): string {
 	if (days < 7) return `${days} day${days > 1 ? 's' : ''}`;
 	if (weeks < 4) return `${weeks} week${weeks > 1 ? 's' : ''}`;
 
-	// Format date as YYYY-MM-DD
 	return past.toISOString().split('T')[0];
 }
 
 export function convertOHLCData(data: OHLCData[]) {
 	return data
 		.map((d) => ({
-			time: d[0] as Time, // ensure seconds, not ms
+			time: d[0] as Time,
 			open: d[1],
 			high: d[2],
 			low: d[3],

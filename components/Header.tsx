@@ -29,11 +29,11 @@ const Header = () => {
 						'home': true
 					})}>Home</Link>
 
-					<SearchModal />
-
 					<Link href="/coins" className={cn('nav-link', {
 						'active': pathname === '/coins'
 					})}>All coins</Link>
+
+					<SearchModal />
 				</nav>
 			</div>
 		</header>
