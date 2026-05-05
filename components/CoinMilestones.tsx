@@ -5,7 +5,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { formatCurrency } from '@/lib/utils';
 
-// Interface yang diperbaiki: Field dibuat opsional (?) agar kompatibel dengan API yang ada
 interface MarketData {
       ath?: { usd: number };
       ath_date?: { usd: string };
@@ -13,15 +12,13 @@ interface MarketData {
       atl_date?: { usd: string };
       ath_change_percentage?: { usd: number };
       atl_change_percentage?: { usd: number };
-      // Menambahkan field lain agar tidak error jika API mengembalikan full object
       [key: string]: any;
 }
 
 interface CoinMilestonesProps {
-      marketData?: MarketData; // Dibuat opsional juga
+      marketData?: MarketData;
 }
 
-// Helper untuk format tanggal
 const formatDate = (dateString?: string) => {
       if (!dateString) return '-';
       try {
@@ -32,7 +29,6 @@ const formatDate = (dateString?: string) => {
       }
 };
 
-// Kartu Internal untuk Statistik
 const StatCard = ({
       title,
       price,
@@ -48,7 +44,6 @@ const StatCard = ({
 }) => {
       const isHigh = type === 'high';
 
-      // Logic Warna Persentase
       const isPositive = percentage !== undefined ? (isHigh ? percentage > 0 : percentage > 0) : false;
 
       return (
@@ -97,7 +92,6 @@ const StatCard = ({
 const CoinMilestones = ({ marketData }: CoinMilestonesProps) => {
       if (!marketData) return null;
 
-      // Ekstrak data secara aman dengan Optional Chaining (?.)
       const athPrice = marketData.ath?.usd;
       const athDate = marketData.ath_date?.usd;
       const athChange = marketData.ath_change_percentage?.usd;
@@ -109,7 +103,6 @@ const CoinMilestones = ({ marketData }: CoinMilestonesProps) => {
       return (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {/* TOP GAINER / ALL TIME HIGH */}
-                  {/* Hanya render jika data ATH ada */}
                   {athPrice && (
                         <StatCard
                               title="All-Time High (ATH)"
@@ -121,7 +114,6 @@ const CoinMilestones = ({ marketData }: CoinMilestonesProps) => {
                   )}
 
                   {/* TOP LOSER / ALL TIME LOW */}
-                  {/* Hanya render jika data ATL ada */}
                   {atlPrice && (
                         <StatCard
                               title="All-Time Low (ATL)"

@@ -30,16 +30,16 @@ const Page = async ({ params }: NextPageProps) => {
         }),
     ]);
 
-
     const platform = coinData.asset_platform_id
         ? coinData.detail_platforms?.[coinData.asset_platform_id]
         : null;
+
     const network = platform?.geckoterminal_url.split('/')[3] || null;
+
     const contractAddress = platform?.contract_address || null;
 
     const pool = await getPools(id, network, contractAddress);
 
-    // Format helper untuk angka supply (supaya tidak ada tanda mata uang $, tapi pemisah ribuan)
     const formatSupply = (value: number | null | undefined) => {
         if (!value) return '-';
         return `${value.toLocaleString('en-US')} ${coinData.symbol.toUpperCase()}`;
@@ -50,14 +50,12 @@ const Page = async ({ params }: NextPageProps) => {
             label: 'Market Cap',
             value: formatCurrency(coinData.market_data.market_cap.usd),
         },
-        // --- TAMBAHAN: FDV (Fully Diluted Valuation) ---
         {
             label: 'Fully Diluted Valuation',
             value: coinData.market_data.fully_diluted_valuation?.usd
                 ? formatCurrency(coinData.market_data.fully_diluted_valuation.usd)
                 : '-',
         },
-        // -----------------------------------------------
         {
             label: 'Market Cap Rank',
             value: `# ${coinData.market_cap_rank}`,
@@ -66,7 +64,6 @@ const Page = async ({ params }: NextPageProps) => {
             label: 'Total Volume',
             value: formatCurrency(coinData.market_data.total_volume.usd),
         },
-        // --- TAMBAHAN: SUPPLIES ---
         {
             label: 'Circulating Supply',
             value: formatSupply(coinData.market_data.circulating_supply),
@@ -79,7 +76,6 @@ const Page = async ({ params }: NextPageProps) => {
             label: 'Max Supply',
             value: formatSupply(coinData.market_data.max_supply),
         },
-        // ---------------------------
         {
             label: 'Website',
             value: '-',

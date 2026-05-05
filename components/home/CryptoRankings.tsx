@@ -5,7 +5,6 @@ import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { formatCurrency } from '@/lib/utils';
 
-// Interface data koin dari CoinGecko
 interface Coin {
   id: string;
   symbol: string;
@@ -17,14 +16,11 @@ interface Coin {
 
 interface RankingListProps {
   title: string;
-  coins: Coin[]; // Ubah props menerima array coin langsung
+  coins: Coin[]; 
   titleColorClass?: string;
-  isGainer?: boolean; // Penanda untuk styling warna persen
+  isGainer?: boolean; 
 }
 
-/**
- * Komponen UI List (Sekarang hanya menerima data, tidak fetch lagi)
- */
 const RankingList = ({ title, coins, titleColorClass = 'text-primary', isGainer = true }: RankingListProps) => {
   return (
     <Card className="w-full h-full">
@@ -86,10 +82,6 @@ const RankingList = ({ title, coins, titleColorClass = 'text-primary', isGainer 
   );
 };
 
-/**
- * Komponen Utama Container
- * Bertugas fetching data 1x, lalu sorting jadi Gainers & Losers
- */
 export default function CryptoRankings() {
   const [allCoins, setAllCoins] = useState<Coin[]>([]);
   const [loading, setLoading] = useState(true);
@@ -98,8 +90,6 @@ export default function CryptoRankings() {
     const fetchData = async () => {
       setLoading(true);
       try {
-        // Kita ambil 50 koin terbesar berdasarkan Market Cap
-        // Lalu nanti kita sort manual di sini untuk cari Gainer & Loser
         const res = await fetch(
           `https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=50&page=1&sparkline=false&price_change_percentage=24h`
         );
@@ -115,14 +105,12 @@ export default function CryptoRankings() {
     fetchData();
   }, []);
 
-  // Hitung Top Gainers (Sort Descending)
   const topGainers = useMemo(() => {
     return [...allCoins]
       .sort((a, b) => b.price_change_percentage_24h - a.price_change_percentage_24h)
       .slice(0, 5);
   }, [allCoins]);
 
-  // Hitung Top Losers (Sort Ascending)
   const topLosers = useMemo(() => {
     return [...allCoins]
       .sort((a, b) => a.price_change_percentage_24h - b.price_change_percentage_24h)
